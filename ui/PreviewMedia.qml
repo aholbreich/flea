@@ -130,7 +130,19 @@ Item {
             root.publish(position, false)
         }
         onDurationChanged: root.publish(position, false)
-        onSourceChanged: root.publish(position, false)
+        // autoPlay starts the first source only. Down in Quick Look hands this same player the next
+        // clip, which loaded and then sat stopped at 0:00 behind a black frame (#364), so a source
+        // that loads after a change starts here when this player starts at all.
+        property bool startOwed: false
+        onSourceChanged: {
+            player.startOwed = root.autoStart && String(source).length > 0
+            root.publish(position, false)
+        }
+        onMediaStatusChanged: {
+            if (mediaStatus !== MediaPlayer.LoadedMedia || !player.startOwed) return
+            player.startOwed = false
+            if (root.autoStart) play()
+        }
     }
 
     // A clip almost never matches the frame, so the letterbox bars are the canvas's own darker
