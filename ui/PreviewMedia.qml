@@ -63,6 +63,7 @@ Item {
     // Preview.qml's own strip drives these two; kept here, not there, so Preview.qml never has to
     // import QtMultimedia itself, the isolation the file comment above exists to protect.
     function togglePlay() {
+        player.startOwed = false
         if (player.playbackState === MediaPlayer.PlayingState) player.pause()
         else player.play()
     }
@@ -90,6 +91,8 @@ Item {
     // The helper's commands, in milliseconds: Seek is relative, SetPosition absolute. Sample lines: "PlayPause", "Seek -2500", "SetPosition 700".
     function remote(line) {
         var word = line.split(" ")
+        // A transport command is the listener's own choice, so it cancels a start still owed to a loading clip.
+        if (word[0] === "Play" || word[0] === "Pause" || word[0] === "Stop") player.startOwed = false
         if (word[0] === "Play") player.play()
         else if (word[0] === "Pause") player.pause()
         else if (word[0] === "PlayPause") root.togglePlay()

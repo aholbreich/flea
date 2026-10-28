@@ -235,11 +235,30 @@ ShellRoot {
         shell.waitFor("closing Quick Look ends the helper", function () { return shell.stubGone(3) })
     }
 
+    // A Stop that lands while the next clip loads is the listener's choice: that clip loads and stays stopped.
+    function stepStopWhileLoading() {
+        shell.media = mediaComponent.createObject(holder, { path: shell.clip, kind: "video", autoStart: true })
+        shell.waitFor("the autostart player plays", function () { return shell.media.status === "playing" })
+    }
+
+    function stepStopWhileLoadingNext() {
+        shell.media.path = shell.nextClip
+        shell.media.remote("Stop")
+        shell.waitFor("the stopped player settles on the next clip", function () { return shell.media.poster || shell.media.status === "playing" })
+    }
+
+    function stepStopWhileLoadingStill() {
+        shell.check("Stop while loading: the next clip stays stopped", shell.media.status, "stopped")
+        shell.media.destroy()
+        shell.media = null
+    }
+
     readonly property var script: [
         shell.stepIdleFollow, shell.stepIdleFollowLoad, shell.stepIdleFollowStill, shell.stepBefore, shell.stepPlaying, shell.stepFirstLine, shell.stepNoTickLines, shell.stepPaused,
         shell.stepPausedLine, shell.stepSeekLine, shell.stepSetPosition, shell.stepRelativeSeek, shell.stepResumed,
         shell.stepStopped, shell.stepClosed, shell.stepAudio, shell.stepAudioLine, shell.stepQuickLook,
-        shell.stepQuickLookNext, shell.stepQuickLookNextPlaying, shell.stepQuickLookPlaying
+        shell.stepQuickLookNext, shell.stepQuickLookNextPlaying, shell.stepQuickLookPlaying,
+        shell.stepStopWhileLoading, shell.stepStopWhileLoadingNext, shell.stepStopWhileLoadingStill
     ]
 
     function finish() {
